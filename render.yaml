@@ -1,10 +1,10 @@
-# render.yaml
 version: "1"
 
 services:
+  # --- Backend (Node.js/Express) ---
   - type: web
     name: ogs-exam-portal-server
-    runtime: node
+    env: node
     rootDir: server
     buildCommand: npm install
     startCommand: node server.js
@@ -22,9 +22,10 @@ services:
       - key: PORT
         value: 10000
 
+  # --- Frontend (React Static Build) ---
   - type: web
     name: ogs-exam-portal-client
-    runtime: static
+    env: static
     rootDir: client
     buildCommand: npm install && npm run build
     staticPublishPath: build
