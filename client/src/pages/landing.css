@@ -1,0 +1,8 @@
+:root{--ogs-green:#0b8a4a;--gold:#c9a24c}
+body{margin:0;background:#fff}
+.container{width:92%;max-width:1100px;margin:0 auto;padding:20px}
+.ogs-hero{background:linear-gradient(90deg, #0b8a4a, #0ea56a);color:#fff;padding:40px;border-radius:8px}
+.card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.06);margin-top:16px}
+.proprietor-card{display:flex;gap:16px;align-items:center;padding:18px;border-radius:12px;background:linear-gradient(180deg,#fffaf0,#ffffff);border:3px solid var(--gold)}
+.proprietor-card .img{width:140px;height:140px;border-radius:8px;background:#f3f3f3;overflow:hidden}
+.proprietor-card .msg{flex:1}

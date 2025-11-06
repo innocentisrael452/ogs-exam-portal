@@ -1,0 +1,4 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+export default function ResultPage(){ const { id } = useParams(); const [result,setResult]=useState(null); useEffect(()=>{ const API = process.env.REACT_APP_API || ''; (async ()=>{ try{ const res = await axios.get(`${API}/api/exams/result/${id}`); setResult(res.data); }catch(e){console.error(e)} })(); },[id]); if(!result) return <div>Loading...</div>; const pct = result.pct ?? ((result.objScore/result.objMax)*100 || 0); return (<div style={{maxWidth:800,margin:20}}><h2>Result</h2><div>Student: {result.studentName}</div><div>Score: {result.objScore} / {result.objMax} — {pct.toFixed(2)}%</div><button onClick={()=>window.print()}>Download Result (PDF)</button></div>); }

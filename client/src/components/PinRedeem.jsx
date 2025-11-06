@@ -1,0 +1,5 @@
+import React, { useState } from "react";
+import axios from "axios";
+export default function PinRedeem(){ const [code,setCode]=useState(''); const [message,setMessage]=useState(null); const API = process.env.REACT_APP_API || '';
+  const redeem = async ()=>{ setMessage('Checking...'); try{ const exam5 = prompt('Enter your 5-digit exam number:'); const res = await axios.post(`${API}/api/pins/redeem-anon`, { code, exam5 }); if(res.data.ok){ setMessage(res.data.message|| 'Pin redeemed'); } else setMessage(res.data.error||'Unknown'); } catch(err){ setMessage(err?.response?.data?.error || err.message || 'Error'); } };
+  return (<div style={{maxWidth:560,margin:'40px auto'}}><h2>Enter result pin</h2><div style={{display:'flex',gap:8}}><input value={code} onChange={e=>setCode(e.target.value.trim())} placeholder='OGS123456789' style={{flex:1,padding:8}} /><button onClick={redeem} style={{padding:'8px 12px',background:'#0b8a4a',color:'#fff',borderRadius:6}}>Redeem</button></div>{message && <div style={{marginTop:12}}>{message}</div>}</div>); }
