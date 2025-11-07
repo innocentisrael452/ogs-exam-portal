@@ -1,7 +1,7 @@
+# render.yaml
 version: "1"
 
 services:
-  # --- Backend (Node.js/Express) ---
   - type: web
     name: ogs-exam-portal-server
     env: node
@@ -22,7 +22,6 @@ services:
       - key: PORT
         value: 10000
 
-  # --- Frontend (React Static Build) ---
   - type: web
     name: ogs-exam-portal-client
     env: static
