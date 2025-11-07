@@ -1,13 +1,28 @@
 import express from "express";
-import Pin from "../models/Pin.js";
-import Result from "../models/Result.js";
-import { stringify as csvStringify } from "csv-stringify/sync";
+import Pin from "../models/Pin.js"; // adjust path if needed
 
 const router = express.Router();
-function generatePinCode() { const digits = Array.from({length:9}, ()=>Math.floor(Math.random()*10)).join(''); return `OGS${digits}`; }
-router.post("/generate", async (req,res)=>{ const { count=100, session="2025/2026 - T1"} = req.body; const pins=[]; for(let i=0;i<count;i++){ let code; do{ code = generatePinCode(); } while(await Pin.findOne({ code })); const p = await Pin.create({ code, metadata:{ session }, maxUse:2 }); pins.push(p); } res.json({ ok:true, created: pins.length, pins: pins.map(p=>p.code) }); });
-router.get("/download", async (req,res)=>{ const csv = csvStringify(rows, { header: true });
-router.post("/redeem-anon", async (req,res)=>{ try{ const { code, exam5 } = req.body; if(!code) return res.status(400).json({ ok:false, error:"Missing code" }); const PIN_GRACE_MIN = 10; const pin = await Pin.findOne({ code }); if(!pin) return res.status(404).json({ ok:false, error:"Invalid pin" }); if(!pin.purchased) return res.status(403).json({ ok:false, error:"Pin not purchased/activated" }); const now = new Date(); const lastUsedAt = pin.lastUsedAt ? new Date(pin.lastUsedAt) : null; let inGrace=false; if(lastUsedAt){ const diffMinutes=(now-lastUsedAt)/(1000*60); if(diffMinutes<=PIN_GRACE_MIN) inGrace=true; } if(inGrace){ pin.lastUsedAt = now; pin.used = true; pin.usedAt = now; await pin.save(); const results = await Result.find({ pin: exam5, published: true }).lean(); return res.json({ ok:true, message:"Pin redeemed (grace)", remainingUses: Math.max(0, pin.maxUse - pin.usedCount), results }); } const newCount = (pin.usedCount||0) + 1; if(newCount > pin.maxUse) return res.status(403).json({ ok:false, error:"PIN_EXPIRED" }); pin.usedCount = newCount; pin.lastUsedAt = now; pin.used = true; pin.usedAt = now; await pin.save(); const results = await Result.find({ pin: exam5, published: true }).lean(); return res.json({ ok:true, message:"Pin redeemed", remainingUses: Math.max(0, pin.maxUse - pin.usedCount), results }); } catch(err){ console.error(err); res.status(500).json({ ok:false, error:"Server error" }); } });
-router.post("/admin/activate", async (req,res)=>{ const { code } = req.body; const pin = await Pin.findOne({ code }); if(!pin) return res.status(404).json({ ok:false, error:"Not found" }); pin.purchased = true; await pin.save(); res.json({ ok:true, message:"Activated" }); });
-router.post("/admin/reset", async (req,res)=>{ const { code } = req.body; const pin = await Pin.findOne({ code }); if(!pin) return res.status(404).json({ ok:false, error:"Not found" }); pin.usedCount = 0; pin.lastUsedAt = null; pin.used = false; pin.usedAt = null; await pin.save(); res.json({ ok:true, message:"Reset" }); });
+
+// Example routes
+router.post("/", async (req, res) => {
+  try {
+    const newPin = new Pin(req.body);
+    const savedPin = await newPin.save();
+    res.status(201).json(savedPin);
+  } catch (err) {
+    console.error("Error creating pin:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const pins = await Pin.find();
+    res.status(200).json(pins);
+  } catch (err) {
+    console.error("Error fetching pins:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

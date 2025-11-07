@@ -1,33 +1,18 @@
-# Render manifest - production-ready: static client + node backend
-version: "1"
-
 services:
   - type: web
     name: ogs-exam-portal-server
     env: node
-    repo: https://github.com/innocentisrael452/ogs-exam-portal
-    branch: main
     rootDir: server
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: MONGO_URI
-        sync: false
+      - key: NODE_VERSION
+        value: 22.16.0
       - key: PORT
-        value: "10000"
-    plan: free
-    region: frankfurt
+        value: 10000
 
-staticSites:
   - type: static
     name: ogs-exam-portal-client
-    repo: https://github.com/innocentisrael452/ogs-exam-portal
-    branch: main
     rootDir: client
     buildCommand: npm install && npm run build
-    staticPublishPath: client/build
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://ogs-exam-portal-server.onrender.com
-    plan: free
-    region: frankfurt
+    staticPublishPath: build
