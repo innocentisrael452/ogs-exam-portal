@@ -1,18 +1,12 @@
 services:
   - type: web
-    name: ogs-exam-portal-server
+    name: ogs-exam-portal-backend
     env: node
     rootDir: server
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: "npm install"
+    startCommand: "node server.js"
     envVars:
-      - key: NODE_VERSION
-        value: 22.16.0
+      - key: MONGO_URI
+        value: mongodb+srv://ogs_admin:OgsPortal2025!@ogs-exam-cluster.orqouyi.mongodb.net/?appName=ogs-exam-cluster
       - key: PORT
         value: 10000
-
-  - type: static
-    name: ogs-exam-portal-client
-    rootDir: client
-    buildCommand: npm install && npm run build
-    staticPublishPath: build
