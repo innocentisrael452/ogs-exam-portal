@@ -1,49 +1,75 @@
 import express from "express";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
-import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import pinsRouter from "./routes/pins.js";
-import examsRouter from "./routes/exams.js"; // ✅ add this
-
+// Load environment variables
 dotenv.config();
 
-const app = express(); // ✅ moved up before using app
+// Initialize Express
+const app = express();
 
-app.use(express.json());
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB connection
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ogs_exam_portal";
-
-mongoose
-  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
-
-// API routes
-app.use("/api/pins", pinsRouter);
-app.use("/api/exams", examsRouter);
-
-// Static file handling (for production)
+// Determine directory name (for ES modules)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-if (process.env.NODE_ENV === "production") {
-  const clientBuild = path.join(__dirname, "../client/build");
-  app.use(express.static(clientBuild));
-  app.get("*", (req, res) =>
-    res.sendFile(path.join(clientBuild, "index.html"))
-  );
-} else {
-  app.get("/", (req, res) => res.send("OGS Exam Portal backend is running..."));
+// ----------------------------
+// ✅ MongoDB Connection Setup
+// ----------------------------
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+// ----------------------------
+// ✅ Routes Setup
+// ----------------------------
+
+// Example: Basic root route to verify API is live
+app.get("/", (req, res) => {
+  res.send("OGS Exam Portal Backend is Running ✅");
+});
+
+// Import your API routes here (if any)
+import fs from "fs";
+
+const routesPath = path.join(__dirname, "routes");
+if (fs.existsSync(routesPath)) {
+  fs.readdirSync(routesPath).forEach((file) => {
+    if (file.endsWith(".js")) {
+      import(`./routes/${file}`).then((routeModule) => {
+        if (routeModule.default) {
+          app.use("/api", routeModule.default);
+          console.log(`✅ Loaded route: ${file}`);
+        }
+      });
+    }
+  });
 }
 
-// Start server
+// ----------------------------
+// ✅ Serve Frontend (for production)
+// ----------------------------
+const clientBuildPath = path.join(__dirname, "../client/build");
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+}
+
+// ----------------------------
+// ✅ Server Listen
+// ----------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));
